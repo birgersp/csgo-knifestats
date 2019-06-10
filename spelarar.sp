@@ -15,19 +15,18 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     HookEvent("player_death", Event_PlayerDeath);
+    knifingPlayerVictims = new StringMap();
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
     event.GetString("weapon", weaponString, 31, "");
-    PrintToChatAll(weaponString);
-    if (StrEqual(weaponString, "knife", true))
+    if (StrEqual(weaponString, "knife", true) || StrEqual(weaponString, "knife_t", true))
     {
         int victim_id = event.GetInt("userid");
         int attacker_id = event.GetInt("attacker");
         int victim = GetClientOfUserId(victim_id);
         int attacker = GetClientOfUserId(attacker_id);
-        PrintToChatAll("2");
         PlayerKnifedBy(victim, attacker);
     }
 }
@@ -38,20 +37,20 @@ public void PlayerKnifedBy(int victim, int attacker)
     GetClientName(victim, nameOfVictim, sizeof(nameOfVictim));
 
     decl String:nameOfAttacker[64];
-    GetClientName(victim, nameOfAttacker, sizeof(nameOfAttacker));
-
-    // knifingPlayerVictims
-    // "player1", StringMap
+    GetClientName(attacker, nameOfAttacker, sizeof(nameOfAttacker));
 
     new StringMap:victims;
-    knifingPlayerVictims.GetValue(nameOfAttacker, victims)
+    if (!knifingPlayerVictims.GetValue(nameOfAttacker, victims))
+    {
+        victims = new StringMap();
+    }
 
     new numberOfIncidents;
-    victims.GetValue(nameOfVictim, numberOfIncidents)
+    victims.GetValue(nameOfVictim, numberOfIncidents);
 
     numberOfIncidents += 1;
+    victims.SetValue(nameOfVictim, numberOfIncidents);
+    knifingPlayerVictims.SetValue(nameOfAttacker, victims);
 
-    PrintToChatAll("%d knifed %s", nameOfAttacker, nameOfVictim);
-
-    PrintToChatAll("3");
+    PrintToChatAll("%s has knifed %s %d times", nameOfAttacker, nameOfVictim, numberOfIncidents);
 }
