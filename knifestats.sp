@@ -1,7 +1,6 @@
 #include <sourcemod>
 
 new StringMap:knifingPlayerVictims;
-new String:weaponString[32];
 
 public Plugin myinfo =
 {
@@ -20,7 +19,8 @@ public void OnPluginStart()
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-    event.GetString("weapon", weaponString, 31, "");
+    decl String:weaponString[32];
+    event.GetString("weapon", weaponString, sizeof(weaponString), "");
     if (StrEqual(weaponString, "knife", true) || StrEqual(weaponString, "knife_t", true))
     {
         int victim_id = event.GetInt("userid");
