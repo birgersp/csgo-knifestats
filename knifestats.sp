@@ -5,11 +5,11 @@ new String:weaponString[32];
 
 public Plugin myinfo =
 {
-    name = "My First Plugin",
-	author = "Me",
-	description = "My first plugin ever",
+    name = "KnifeStats",
+	author = "birgersp",
+	description = "Display who knifed who",
 	version = "1.0",
-	url = "http://www.sourcemod.net/"
+	url = "https://github.com/birgersp"
 };
 
 public void OnPluginStart()
