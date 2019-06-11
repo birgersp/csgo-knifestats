@@ -71,7 +71,6 @@ public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
 	numberOfIncidents += 1;
 	victims.SetValue(nameOfVictim, numberOfIncidents);
 	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
-
 	PrintToChatAll("%s has knifed %s %d times!", nameOfAttacker, nameOfVictim, numberOfIncidents);
 }
 
@@ -82,6 +81,7 @@ public void PrintAttackersAndVictims()
 	for (new i = 0; i < playerVictimsSS.Length; i++)
 	{
 		playerVictimsSS.GetKey(i, nameOfAttacker, sizeof(nameOfAttacker));
+		PrintVictimsOf(nameOfAttacker);
 	}
 }
 
