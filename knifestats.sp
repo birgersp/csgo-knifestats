@@ -13,8 +13,9 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    HookEvent("player_death", Event_PlayerDeath);
     knifingPlayerVictims = new StringMap();
+    HookEvent("player_death", Event_PlayerDeath);
+    HookEvent("round_start", Event_RoundStart);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -53,4 +54,9 @@ public void PlayerKnifedBy(int victim, int attacker)
     knifingPlayerVictims.SetValue(nameOfAttacker, victims);
 
     PrintToChatAll("%s has knifed %s %d times", nameOfAttacker, nameOfVictim, numberOfIncidents);
+}
+
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+{
+    knifingPlayerVictims = new StringMap();
 }
