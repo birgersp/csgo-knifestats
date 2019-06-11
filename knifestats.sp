@@ -71,7 +71,10 @@ public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
 	numberOfIncidents += 1;
 	victims.SetValue(nameOfVictim, numberOfIncidents);
 	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
-	PrintToChatAll("%s has knifed %s %d times!", nameOfAttacker, nameOfVictim, numberOfIncidents);
+	char pluralBuffer[] = "s";
+	if (numberOfIncidents == 1)
+		pluralBuffer[0] = '\0';
+	PrintToChatAll("%s has knifed %s %d time%s!", nameOfAttacker, nameOfVictim, numberOfIncidents, pluralBuffer);
 }
 
 public void PrintAttackersAndVictims()
@@ -101,6 +104,8 @@ public void PrintVictimsOf(const char[] nameOfAttacker)
 		victimsSS.GetKey(i, nameOfVictim, sizeof(nameOfVictim));
 		int incidents;
 		victims.GetValue(nameOfVictim, incidents);
+		if (i > 0)
+			Format(string, sizeof(string), "%s,", string);
 		Format(string, sizeof(string), "%s %s(%d)", string, nameOfVictim, incidents);
 	}
 	PrintToChatAll(string);
