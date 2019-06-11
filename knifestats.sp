@@ -1,6 +1,7 @@
 #include <sourcemod>
 
 StringMap knifingPlayerVictims;
+bool printKnifeIncidents;
 
 public Plugin myinfo =
 {
@@ -14,10 +15,11 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	knifingPlayerVictims = new StringMap();
+	printKnifeIncidents = true;
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_RoundEnd);
-	RegServerCmd("knifestats_test", Cmd_Test);
+	RegServerCmd("knifestats", Cmd_Knifestats);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -48,10 +50,27 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	PrintAttackersAndVictims();
 }
 
-public Action Cmd_Test(int args)
+public Action Cmd_Knifestats(int args)
 {
-	PlayerKnifedBy("Johnny", "Robert");
-	PrintAttackersAndVictims();
+	if (args < 1)
+	{
+		PrintToServer("test toggle_counter");
+		return;
+	}
+
+	char argument[16];
+	GetCmdArg(1, argument, sizeof(argument));
+
+	if (StrEqual(argument, "test", true))
+	{
+		PlayerKnifedBy("Johnny", "Robert");
+		PrintAttackersAndVictims();
+	}
+	else if (StrEqual(argument, "toggle_counter", true))
+	{
+		printKnifeIncidents = !printKnifeIncidents;
+		PrintToServer("toggling printKnifeIncidents");
+	}
 }
 
 public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
@@ -71,10 +90,14 @@ public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
 	numberOfIncidents += 1;
 	victims.SetValue(nameOfVictim, numberOfIncidents);
 	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
-	char pluralBuffer[] = "s";
-	if (numberOfIncidents == 1)
-		pluralBuffer[0] = '\0';
-	PrintToChatAll("%s has knifed %s %d time%s!", nameOfAttacker, nameOfVictim, numberOfIncidents, pluralBuffer);
+
+	if (printKnifeIncidents)
+	{
+		char pluralBuffer[] = "s";
+		if (numberOfIncidents == 1)
+			pluralBuffer[0] = '\0';
+		PrintToChatAll("%s has knifed %s %d time%s!", nameOfAttacker, nameOfVictim, numberOfIncidents, pluralBuffer);
+	}
 }
 
 public void PrintAttackersAndVictims()
