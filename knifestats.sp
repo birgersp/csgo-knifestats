@@ -17,7 +17,7 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("round_end", Event_RoundEnd);
-	RegConsoleCmd("knifestats", Cmd_Test, "Test KnifeStats");
+	RegServerCmd("test_command", Cmd_Test);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -68,9 +68,8 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	PrintAttackersAndVictims();
 }
 
-public Action Cmd_Test(int client, int args)
+public Action Cmd_Test(int args)
 {
-	PrintToChatAll("test");
 	PrintAttackersAndVictims();
 }
 
