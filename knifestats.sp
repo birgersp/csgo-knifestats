@@ -87,8 +87,8 @@ public void PrintAttackersAndVictims()
 
 public void PrintVictimsOf(const char[] nameOfAttacker)
 {
-	char string[128];
-	Format(string, sizeof(string), "%s:", nameOfAttacker);
+	char string[256];
+	Format(string, sizeof(string), "%s knife kills:", nameOfAttacker);
 
 	StringMap victims;
 	knifingPlayerVictims.GetValue(nameOfAttacker, victims);
