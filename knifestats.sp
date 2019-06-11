@@ -87,7 +87,20 @@ public void PrintAttackersAndVictims()
 public void PrintVictimsOf(const char[] nameOfAttacker)
 {
     decl String:buffer[128];
-    buffer[0] = '\0';
-    StrCat(buffer, sizeof(buffer), nameOfAttacker);
-    PrintToChatAll(buffer);
+	Format(buffer, sizeof(buffer), "%s:", nameOfAttacker);
+
+	new StringMap:victims;
+	knifingPlayerVictims.GetValue(nameOfAttacker, victims);
+
+	decl String:nameOfVictim[64];
+
+	new StringMapSnapshot:victimsSS = victims.Snapshot();
+	for (new i = 0; i < victimsSS.Length; i++)
+    {
+        victimsSS.GetKey(i, nameOfVictim, sizeof(nameOfVictim));
+		decl incidents;
+		victims.GetValue(nameOfVictim, incidents);
+		Format(buffer, sizeof(buffer), "%s %s(%d)", buffer, nameOfVictim, incidents);
+    }
+	PrintToChatAll(buffer);
 }
