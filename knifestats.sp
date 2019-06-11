@@ -16,6 +16,7 @@ public void OnPluginStart()
     knifingPlayerVictims = new StringMap();
     HookEvent("player_death", Event_PlayerDeath);
     HookEvent("round_start", Event_RoundStart);
+    HookEvent("round_end", Event_RoundEnd);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -59,4 +60,27 @@ public void PlayerKnifedBy(int victim, int attacker)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     knifingPlayerVictims = new StringMap();
+}
+
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+{
+    PrintAttackersAndVictims();
+}
+
+public void PrintAttackersAndVictims()
+{
+    new StringMapSnapshot:playerVictimsSS = knifingPlayerVictims.Snapshot();
+    decl String:nameOfAttacker[64];
+    for (new i = 0; i < playerVictimsSS.Length; i++)
+    {
+        playerVictimsSS.GetKey(i, nameOfAttacker, sizeof(nameOfAttacker));
+    }
+}
+
+public void PrintVictimsOf(const char[] nameOfAttacker)
+{
+    decl String:buffer[128];
+    buffer[0] = '\0';
+    StrCat(buffer, sizeof(buffer), nameOfAttacker);
+    PrintToChatAll(buffer);
 }
