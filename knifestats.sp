@@ -30,32 +30,12 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		int attacker_id = event.GetInt("attacker");
 		int victim = GetClientOfUserId(victim_id);
 		int attacker = GetClientOfUserId(attacker_id);
-		PlayerKnifedBy(victim, attacker);
+		char nameOfVictim[64];
+		GetClientName(victim, nameOfVictim, sizeof(nameOfVictim));
+		char nameOfAttacker[64];
+		GetClientName(attacker, nameOfAttacker, sizeof(nameOfAttacker));
+		PlayerKnifedBy(nameOfVictim, nameOfAttacker);
 	}
-}
-
-public void PlayerKnifedBy(int victim, int attacker)
-{
-	char nameOfVictim[64];
-	GetClientName(victim, nameOfVictim, sizeof(nameOfVictim));
-
-	char nameOfAttacker[64];
-	GetClientName(attacker, nameOfAttacker, sizeof(nameOfAttacker));
-
-	StringMap victims;
-	if (!knifingPlayerVictims.GetValue(nameOfAttacker, victims))
-	{
-		victims = new StringMap();
-	}
-
-	int numberOfIncidents;
-	victims.GetValue(nameOfVictim, numberOfIncidents);
-
-	numberOfIncidents += 1;
-	victims.SetValue(nameOfVictim, numberOfIncidents);
-	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
-
-	PrintToChatAll("%s has knifed %s %d times", nameOfAttacker, nameOfVictim, numberOfIncidents);
 }
 
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
@@ -73,6 +53,27 @@ public Action Cmd_Test(int args)
 	PrintAttackersAndVictims();
 }
 
+public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
+{
+	StringMap victims;
+	if (!knifingPlayerVictims.GetValue(nameOfAttacker, victims))
+	{
+		victims = new StringMap();
+	}
+
+	int numberOfIncidents;
+	if (!victims.GetValue(nameOfVictim, numberOfIncidents))
+	{
+		numberOfIncidents = 0;
+	}
+
+	numberOfIncidents += 1;
+	victims.SetValue(nameOfVictim, numberOfIncidents);
+	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
+
+	PrintToChatAll("%s has knifed %s %d times!", nameOfAttacker, nameOfVictim, numberOfIncidents);
+}
+
 public void PrintAttackersAndVictims()
 {
 	StringMapSnapshot playerVictimsSS = knifingPlayerVictims.Snapshot();
@@ -85,8 +86,8 @@ public void PrintAttackersAndVictims()
 
 public void PrintVictimsOf(const char[] nameOfAttacker)
 {
-	char buffer[128];
-	Format(buffer, sizeof(buffer), "%s:", nameOfAttacker);
+	char string[128];
+	Format(string, sizeof(string), "%s:", nameOfAttacker);
 
 	StringMap victims;
 	knifingPlayerVictims.GetValue(nameOfAttacker, victims);
@@ -99,7 +100,7 @@ public void PrintVictimsOf(const char[] nameOfAttacker)
 		victimsSS.GetKey(i, nameOfVictim, sizeof(nameOfVictim));
 		int incidents;
 		victims.GetValue(nameOfVictim, incidents);
-		Format(buffer, sizeof(buffer), "%s %s(%d)", buffer, nameOfVictim, incidents);
+		Format(string, sizeof(string), "%s %s(%d)", string, nameOfVictim, incidents);
 	}
-	PrintToChatAll(buffer);
+	PrintToChatAll(string);
 }
