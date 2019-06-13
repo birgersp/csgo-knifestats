@@ -102,34 +102,46 @@ public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
 
 public void PrintAttackersAndVictims()
 {
+	int mostKnifeKills = 0;
+	char nameOfAttackerWithMostKnifeKills[64];
+
 	StringMapSnapshot playerVictimsSS = knifingPlayerVictims.Snapshot();
-	char nameOfAttacker[64];
 	for (new i = 0; i < playerVictimsSS.Length; i++)
 	{
+		int attackerKnifeKills = 0;
+
+		char nameOfAttacker[64];
 		playerVictimsSS.GetKey(i, nameOfAttacker, sizeof(nameOfAttacker));
-		PrintVictimsOf(nameOfAttacker);
+		char string[256];
+		Format(string, sizeof(string), "%s knife kills:", nameOfAttacker);
+
+		StringMap victims;
+		knifingPlayerVictims.GetValue(nameOfAttacker, victims);
+
+		char nameOfVictim[64];
+
+		StringMapSnapshot victimsSS = victims.Snapshot();
+		for (new i2 = 0; i2 < victimsSS.Length; i2++)
+		{
+			victimsSS.GetKey(i2, nameOfVictim, sizeof(nameOfVictim));
+			int incidents;
+			victims.GetValue(nameOfVictim, incidents);
+			if (i2 > 0)
+				Format(string, sizeof(string), "%s,", string);
+			Format(string, sizeof(string), "%s %s(%d)", string, nameOfVictim, incidents);
+			attackerKnifeKills += incidents;
+		}
+		PrintToChatAll(string);
+
+		if (attackerKnifeKills > mostKnifeKills)
+		{
+			strcopy(nameOfAttackerWithMostKnifeKills, sizeof(nameOfAttackerWithMostKnifeKills), nameOfAttacker)
+			mostKnifeKills = attackerKnifeKills;
+		}
 	}
-}
 
-public void PrintVictimsOf(const char[] nameOfAttacker)
-{
-	char string[256];
-	Format(string, sizeof(string), "%s knife kills:", nameOfAttacker);
-
-	StringMap victims;
-	knifingPlayerVictims.GetValue(nameOfAttacker, victims);
-
-	char nameOfVictim[64];
-
-	StringMapSnapshot victimsSS = victims.Snapshot();
-	for (new i = 0; i < victimsSS.Length; i++)
+	if (mostKnifeKills > 0)
 	{
-		victimsSS.GetKey(i, nameOfVictim, sizeof(nameOfVictim));
-		int incidents;
-		victims.GetValue(nameOfVictim, incidents);
-		if (i > 0)
-			Format(string, sizeof(string), "%s,", string);
-		Format(string, sizeof(string), "%s %s(%d)", string, nameOfVictim, incidents);
+		PrintToChatAll("Knifer of the match: %s, with %d knife kills!", nameOfAttackerWithMostKnifeKills, mostKnifeKills);
 	}
-	PrintToChatAll(string);
 }
