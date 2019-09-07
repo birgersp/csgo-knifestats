@@ -1,7 +1,7 @@
 #include <sourcemod>
 
-StringMap knifingPlayerVictims;
-bool printKnifeIncidents;
+StringMap victims_of_player;
+bool print_knife_incidents;
 
 public Plugin myinfo =
 {
@@ -14,15 +14,15 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	knifingPlayerVictims = new StringMap();
-	printKnifeIncidents = true;
-	HookEvent("player_death", Event_PlayerDeath);
-	HookEvent("round_start", Event_RoundStart);
-	HookEvent("round_end", Event_RoundEnd);
-	RegServerCmd("knifestats", Cmd_Knifestats);
+	victims_of_player = new StringMap();
+	print_knife_incidents = true;
+	HookEvent("player_death", player_death_event);
+	HookEvent("round_start", round_start_event);
+	HookEvent("round_end", round_end_event);
+	RegServerCmd("knifestats", knifestats_command);
 }
 
-public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
+public void player_death_event(Event event, const char[] name, bool do_not_broadcast)
 {
 	char weaponString[32];
 	event.GetString("weapon", weaponString, sizeof(weaponString), "");
@@ -32,25 +32,25 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		int attacker_id = event.GetInt("attacker");
 		int victim = GetClientOfUserId(victim_id);
 		int attacker = GetClientOfUserId(attacker_id);
-		char nameOfVictim[64];
-		GetClientName(victim, nameOfVictim, sizeof(nameOfVictim));
-		char nameOfAttacker[64];
-		GetClientName(attacker, nameOfAttacker, sizeof(nameOfAttacker));
-		PlayerKnifedBy(nameOfVictim, nameOfAttacker);
+		char name_of_victim[64];
+		GetClientName(victim, name_of_victim, sizeof(name_of_victim));
+		char name_of_attacker[64];
+		GetClientName(attacker, name_of_attacker, sizeof(name_of_attacker));
+		PlayerKnifedBy(name_of_victim, name_of_attacker);
 	}
 }
 
-public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+public void round_start_event(Event event, const char[] name, bool do_not_broadcast)
 {
-	knifingPlayerVictims = new StringMap();
+	victims_of_player = new StringMap();
 }
 
-public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+public void round_end_event(Event event, const char[] name, bool do_not_broadcast)
 {
-	PrintAttackersAndVictims();
+	print_attackers_and_victims();
 }
 
-public Action Cmd_Knifestats(int args)
+public Action knifestats_command(int args)
 {
 	if (args < 1)
 	{
@@ -64,84 +64,84 @@ public Action Cmd_Knifestats(int args)
 	if (StrEqual(argument, "test", true))
 	{
 		PlayerKnifedBy("Johnny", "Robert");
-		PrintAttackersAndVictims();
+		print_attackers_and_victims();
 	}
 	else if (StrEqual(argument, "toggle_counter", true))
 	{
-		printKnifeIncidents = !printKnifeIncidents;
-		PrintToServer("toggling printKnifeIncidents");
+		print_knife_incidents = !print_knife_incidents;
+		PrintToServer("toggling print_knife_incidents");
 	}
 }
 
-public PlayerKnifedBy(char[] nameOfVictim, char[] nameOfAttacker)
+public PlayerKnifedBy(char[] name_of_victim, char[] name_of_attacker)
 {
 	StringMap victims;
-	if (!knifingPlayerVictims.GetValue(nameOfAttacker, victims))
+	if (!victims_of_player.GetValue(name_of_attacker, victims))
 	{
 		victims = new StringMap();
 	}
 
-	int numberOfIncidents;
-	if (!victims.GetValue(nameOfVictim, numberOfIncidents))
+	int no_of_incidents;
+	if (!victims.GetValue(name_of_victim, no_of_incidents))
 	{
-		numberOfIncidents = 0;
+		no_of_incidents = 0;
 	}
 
-	numberOfIncidents += 1;
-	victims.SetValue(nameOfVictim, numberOfIncidents);
-	knifingPlayerVictims.SetValue(nameOfAttacker, victims);
+	no_of_incidents += 1;
+	victims.SetValue(name_of_victim, no_of_incidents);
+	victims_of_player.SetValue(name_of_attacker, victims);
 
-	if (printKnifeIncidents)
+	if (print_knife_incidents)
 	{
-		char pluralBuffer[] = "s";
-		if (numberOfIncidents == 1)
-			pluralBuffer[0] = '\0';
-		PrintToChatAll("%s has knifed %s %d time%s!", nameOfAttacker, nameOfVictim, numberOfIncidents, pluralBuffer);
+		char plural_buffer[] = "s";
+		if (no_of_incidents == 1)
+			plural_buffer[0] = '\0';
+		PrintToChatAll("%s has knifed %s %d time%s!", name_of_attacker, name_of_victim, no_of_incidents, plural_buffer);
 	}
 }
 
-public void PrintAttackersAndVictims()
+public void print_attackers_and_victims()
 {
-	int mostKnifeKills = 0;
-	char nameOfAttackerWithMostKnifeKills[64];
+	int most_knife_kills = 0;
+	char name_of_knifer[64];
 
-	StringMapSnapshot playerVictimsSS = knifingPlayerVictims.Snapshot();
-	for (new i = 0; i < playerVictimsSS.Length; i++)
+	StringMapSnapshot victims_of_player_SS = victims_of_player.Snapshot();
+	for (new i = 0; i < victims_of_player_SS.Length; i++)
 	{
-		int attackerKnifeKills = 0;
+		int attacker_knife_kills = 0;
 
-		char nameOfAttacker[64];
-		playerVictimsSS.GetKey(i, nameOfAttacker, sizeof(nameOfAttacker));
+		char name_of_attacker[64];
+		victims_of_player_SS.GetKey(i, name_of_attacker, sizeof(name_of_attacker));
 		char string[256];
-		Format(string, sizeof(string), "%s knife kills:", nameOfAttacker);
+		Format(string, sizeof(string), "%s knife kills:", name_of_attacker);
 
 		StringMap victims;
-		knifingPlayerVictims.GetValue(nameOfAttacker, victims);
+		victims_of_player.GetValue(name_of_attacker, victims);
 
-		char nameOfVictim[64];
+		char name_of_victim[64];
 
-		StringMapSnapshot victimsSS = victims.Snapshot();
-		for (new i2 = 0; i2 < victimsSS.Length; i2++)
+		StringMapSnapshot victims_SS = victims.Snapshot();
+		for (new i2 = 0; i2 < victims_SS.Length; i2++)
 		{
-			victimsSS.GetKey(i2, nameOfVictim, sizeof(nameOfVictim));
+			victims_SS.GetKey(i2, name_of_victim, sizeof(name_of_victim));
 			int incidents;
-			victims.GetValue(nameOfVictim, incidents);
+			victims.GetValue(name_of_victim, incidents);
 			if (i2 > 0)
 				Format(string, sizeof(string), "%s,", string);
-			Format(string, sizeof(string), "%s %s(%d)", string, nameOfVictim, incidents);
-			attackerKnifeKills += incidents;
+			Format(string, sizeof(string), "%s %s(%d)", string, name_of_victim, incidents);
+			attacker_knife_kills += incidents;
 		}
 		PrintToChatAll(string);
 
-		if (attackerKnifeKills > mostKnifeKills)
+		if (attacker_knife_kills > most_knife_kills)
 		{
-			strcopy(nameOfAttackerWithMostKnifeKills, sizeof(nameOfAttackerWithMostKnifeKills), nameOfAttacker)
-			mostKnifeKills = attackerKnifeKills;
+			strcopy(name_of_knifer, sizeof(name_of_knifer), name_of_attacker)
+			most_knife_kills = attacker_knife_kills;
 		}
 	}
 
-	if (mostKnifeKills > 0)
+	if (most_knife_kills > 0)
 	{
-		PrintToChatAll("Knifer of the match: %s, with %d knife kills!", nameOfAttackerWithMostKnifeKills, mostKnifeKills);
+		PrintToChatAll("Knifer of the match: %s, with %d knife kills!", name_of_knifer, most_knife_kills);
 	}
 }
